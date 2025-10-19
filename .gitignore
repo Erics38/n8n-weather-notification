@@ -1,0 +1,31 @@
+# n8n files
+.n8n/
+*.env
+.env.*
+
+# Credentials - NEVER commit actual credentials
+credentials/*
+!credentials/.gitkeep
+!credentials/README.md
+
+# Node modules (if using custom nodes)
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/

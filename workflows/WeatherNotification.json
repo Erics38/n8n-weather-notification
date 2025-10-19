@@ -1,0 +1,322 @@
+{
+  "name": "WeatherNotification",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10,
+              "triggerAtMinute": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        80
+      ],
+      "id": "8f1378d6-d2ea-4cec-8ee8-45b1b050eec0",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather?q=Berlin,DE&appid=YOUR_OPENWEATHERMAP_API_KEY&units=imperial",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "54cabf1c-ad77-4be3-a52f-8acfb51b8f01",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather?q=Seattle,US&appid=YOUR_OPENWEATHERMAP_API_KEY&units=imperial",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        -160
+      ],
+      "id": "e28101cd-8be6-4b09-8aa7-4225e32450b7",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather?q=Tallinn,EE&appid=YOUR_OPENWEATHERMAP_API_KEY&units=imperial",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        144
+      ],
+      "id": "f3851853-198f-42af-9862-e6f30eda2f79",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather?q=Kamianets-Podilskyi,UA&appid=YOUR_OPENWEATHERMAP_API_KEY&units=imperial",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        304
+      ],
+      "id": "f2809bdf-2d5f-4b7a-8a9d-98660546e44e",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        464,
+        -48
+      ],
+      "id": "ce131068-fa67-4e5d-942f-d1dd579a4c0a",
+      "name": "Merge"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        464,
+        192
+      ],
+      "id": "b35a5dbc-2ddd-4bde-9538-960967e073d6",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        688,
+        64
+      ],
+      "id": "38b348cd-29e6-4a84-a8e0-defd12a7a788",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from all HTTP Request nodes\nconst items = $input.all();\nconst kamyanets = items[0].json;\nconst tallinn = items[1].json;\nconst seattle = items[2].json;\nconst berlin = items[3].json;\n\n// Get current date (European format: DD.MM.YYYY)\nconst today = new Date();\nconst day = String(today.getDate()).padStart(2, '0');\nconst month = String(today.getMonth() + 1).padStart(2, '0');\nconst year = today.getFullYear();\nconst dateString = `${day}.${month}.${year}`;\n\n// Helper function to convert F to C\nconst toC = (f) => ((f - 32) * 5/9).toFixed(1);\n\n// Function to get weather emoji based on condition\nconst getWeatherEmoji = (description, windSpeed) => {\n  const desc = description.toLowerCase();\n  \n  // Check for windy conditions first (over 15 mph)\n  if (windSpeed > 15) return '💨';\n  \n  if (desc.includes('thunder') || desc.includes('storm')) return '⛈️';\n  if (desc.includes('drizzle') || desc.includes('light rain')) return '🌦️';\n  if (desc.includes('rain')) return '🌧️';\n  if (desc.includes('snow')) return '🌨️';\n  if (desc.includes('mist') || desc.includes('fog') || desc.includes('haze')) return '🌫️';\n  if (desc.includes('clear')) return '☀️';\n  if (desc.includes('few clouds')) return '🌤️';\n  if (desc.includes('scattered clouds') || desc.includes('partly')) return '⛅';\n  if (desc.includes('cloud') || desc.includes('overcast')) return '☁️';\n  if (desc.includes('tornado')) return '🌪️';\n  \n  return '🌡️'; // default\n};\n\n// Build the message\nconst message = `🌍 Daily Weather Report\n📅 ${dateString}\n\n${getWeatherEmoji(kamyanets.weather[0].description, kamyanets.wind.speed)} KAM'YANETS'-PODIL'SKYI\n🌡️ ${kamyanets.main.temp}°F (${toC(kamyanets.main.temp)}°C)\n${kamyanets.weather[0].description}\nHigh: ${kamyanets.main.temp_max}°F (${toC(kamyanets.main.temp_max)}°C) | Low: ${kamyanets.main.temp_min}°F (${toC(kamyanets.main.temp_min)}°C)\n\n${getWeatherEmoji(tallinn.weather[0].description, tallinn.wind.speed)} TALLINN\n🌡️ ${tallinn.main.temp}°F (${toC(tallinn.main.temp)}°C)\n${tallinn.weather[0].description}\nHigh: ${tallinn.main.temp_max}°F (${toC(tallinn.main.temp_max)}°C) | Low: ${tallinn.main.temp_min}°F (${toC(tallinn.main.temp_min)}°C)\n\n${getWeatherEmoji(seattle.weather[0].description, seattle.wind.speed)} SEATTLE\n🌡️ ${seattle.main.temp}°F (${toC(seattle.main.temp)}°C)\n${seattle.weather[0].description}\nHigh: ${seattle.main.temp_max}°F (${toC(seattle.main.temp_max)}°C) | Low: ${seattle.main.temp_min}°F (${toC(seattle.main.temp_min)}°C)\n\n${getWeatherEmoji(berlin.weather[0].description, berlin.wind.speed)} BERLIN\n🌡️ ${berlin.main.temp}°F (${toC(berlin.main.temp)}°C)\n${berlin.weather[0].description}\nHigh: ${berlin.main.temp_max}°F (${toC(berlin.main.temp_max)}°C) | Low: ${berlin.main.temp_min}°F (${toC(berlin.main.temp_min)}°C)`;\n\nreturn { message };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        928,
+        64
+      ],
+      "id": "b4183b80-33f6-443d-8b7c-97282a44a717",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID_1",
+        "text": "=   {{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        -32
+      ],
+      "id": "f809c3de-e40b-43a6-8f3f-07469d78197c",
+      "name": "Send a text message",
+      "webhookId": "7cb3802e-8dc3-42dc-a682-64da0002904f",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID_2",
+        "text": "=   {{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        144
+      ],
+      "id": "aab837d5-2e0b-4cab-b6f7-07f0d894f395",
+      "name": "Send a text message1",
+      "webhookId": "7cb3802e-8dc3-42dc-a682-64da0002904f",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Schedule Trigger": [
+      {
+        "json": {
+          "timestamp": "2025-10-19T03:31:13.356-04:00",
+          "Readable date": "October 19th 2025, 3:31:13 am",
+          "Readable time": "3:31:13 am",
+          "Day of week": "Sunday",
+          "Year": "2025",
+          "Month": "October",
+          "Day of month": "19",
+          "Hour": "03",
+          "Minute": "31",
+          "Second": "13",
+          "Timezone": "America/New_York (UTC-04:00)"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5006b526-59f9-4450-be7c-94edcaf2f7e4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6f6bce095d2be0254753c65668a4ea2f7f7e86296ed4d1d5f7ea8faa8306b4be"
+  },
+  "id": "nBPiGc0QPo3tZLNW",
+  "tags": []
+}
