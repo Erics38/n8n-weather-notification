@@ -57,7 +57,7 @@ SETUP.md                         # Full setup instructions
 
 ## Quick Setup
 
-See [SETUP.md](SETUP.md) for full instructions. Short version:
+Setup steps:
 
 1. Install n8n: `npm install -g n8n`
 2. Get a free OpenWeatherMap API key at https://openweathermap.org/api
@@ -68,8 +68,8 @@ See [SETUP.md](SETUP.md) for full instructions. Short version:
 
 ## Customization
 
-The workflow JSON is exported from n8n and can be imported into any n8n instance.
-To modify it:
+Import the workflow JSON into any n8n instance.
+To modify the workflow:
 
 1. Import into n8n
 2. Edit nodes visually in the canvas
